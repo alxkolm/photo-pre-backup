@@ -3,7 +3,7 @@ import subprocess
 from typing import Dict
 
 import commands.thumbnail
-import fileutils.utils
+import utils.file
 import exiftool
 import logging
 from tqdm import tqdm
@@ -19,7 +19,7 @@ OUTPUT_DIRECTORY = config.options.output_dir
 def run():
     with logging_redirect_tqdm():
         try:
-            flist = list(fileutils.utils.file_list(INPUT_DIRECTORY))
+            flist = list(utils.file.list_files(INPUT_DIRECTORY))
 
             # metadata = {fp:get_meta(fp) for fp in tqdm(flist)}
             thumbnails = {}

@@ -6,7 +6,7 @@ def directory_tree():
     pass
 
 
-def file_list(dirpath: str, recursive=True) -> List[str]:
+def list_files(dirpath: str, recursive=True) -> List[str]:
     """
 
     :param path:

@@ -1,39 +1,32 @@
+import logging
 import pathlib
 import subprocess
 from typing import Dict
 
-import commands.thumbnail
-import utils.file
-
-import logging
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
-import configargparse
-from config import options
-import config
 
-INPUT_DIRECTORY = config.options.input_dir
-OUTPUT_DIRECTORY = config.options.output_dir
+import config
+import utils.file
 
 
 def run():
     with logging_redirect_tqdm():
         try:
-            flist = list(utils.file.list_files(INPUT_DIRECTORY))
+            flist = list(utils.file.list_files(config.options.photo_dir))
 
             # metadata = {fp:get_meta(fp) for fp in tqdm(flist)}
             thumbnails = {}
             for fp in tqdm(flist):
                 thumbnails[fp] = create_thumbnail(fp)
 
-            extool.terminate()
+            # extool.terminate()
         except KeyboardInterrupt:
             logging.info('Interrupted by user. Bye!')
     pass
 
 
 # Meta
-
 
 
 def create_image_thumbnail(input_path: str, out_path: str) -> bool:
@@ -60,14 +53,21 @@ def create_video_thumbnail(input_path: str, out_path: pathlib.Path, meta: Dict) 
     return True if x == 0 else False
 
 
+def get_thumbnail_filepath(filepath: str) -> str:
+    inpath = filepath
+    relative_path = str(inpath).replace(config.options.photo_dir, '')
+    base_output_path = pathlib.Path(config.options.thumbnails_dir)
+    output_path = base_output_path.joinpath(pathlib.Path(relative_path.strip('/')))
+    return output_path
+
+
 def create_thumbnail(filepath: str) -> Dict:
     inpath = filepath
-    relative_path = str(inpath).replace(INPUT_DIRECTORY, '')
-    base_output_path = pathlib.Path(OUTPUT_DIRECTORY)
-    output_path = base_output_path.joinpath(pathlib.Path(relative_path.strip('/')))
+    output_path = get_thumbnail_filepath(filepath)
     # create directory for the file
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    relative_path = str(inpath).replace(config.options.photo_dir, '')
     video_extensions = ['.mp4', '.mov']
     # route to specific thumbnail creation function depending on file extension
     if output_path.suffix in video_extensions:

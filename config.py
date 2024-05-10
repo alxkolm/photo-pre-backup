@@ -11,14 +11,14 @@ parser.add_argument('--photo-dir', required=True)
 parser.add_argument('--thumbnails-dir', required=True)
 
 subparser_command = parser.add_subparsers(title='command', help='Operation mode', dest='command')
-subparser_command.add_parser('thumbnail')
-subparser_index = subparser_command.add_parser('index')
+thumbnail = subparser_command.add_parser('thumbnail')
+index = subparser_command.add_parser('index')
+pack = subparser_command.add_parser('pack')
 
-subparser_index_command = subparser_index.add_subparsers(title='subcommand', dest='subcommand')
-subparser_index_command.default = 'list'
-subparser_index_command.add_parser('list')
-subparser_index_command.add_parser('update')
-
+index_command = index.add_subparsers(title='subcommand', dest='subcommand')
+index_command.default = 'list'
+index_command.add_parser('list')
+index_command.add_parser('update')
 
 options = parser.parse_args()
 pass

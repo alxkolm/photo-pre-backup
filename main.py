@@ -2,6 +2,7 @@
 
 import commands.thumbnail
 import commands.the_index
+import commands.pack
 import logging
 from config import options
 
@@ -11,7 +12,8 @@ if __name__ == '__main__':
     # command routing
     routing = {
         'thumbnail': commands.thumbnail.run,
-        'index': commands.the_index.run
+        'index': commands.the_index.run,
+        'pack': commands.pack.run
     }
 
     if options.command not in routing:

@@ -9,6 +9,8 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import config
 import utils.file
 
+video_extensions = ['.mp4', '.mov']
+
 
 def run():
     with logging_redirect_tqdm():
@@ -58,6 +60,8 @@ def get_thumbnail_filepath(filepath: str) -> str:
     relative_path = str(inpath).replace(config.options.photo_dir, '')
     base_output_path = pathlib.Path(config.options.thumbnails_dir)
     output_path = base_output_path.joinpath(pathlib.Path(relative_path.strip('/')))
+    if output_path.suffix in video_extensions:
+        output_path = output_path.with_suffix(f'{output_path.suffix}.jpg')
     return output_path
 
 
@@ -68,10 +72,10 @@ def create_thumbnail(filepath: str) -> Dict:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     relative_path = str(inpath).replace(config.options.photo_dir, '')
-    video_extensions = ['.mp4', '.mov']
+
     # route to specific thumbnail creation function depending on file extension
     if output_path.suffix in video_extensions:
-        output_path = output_path.with_suffix('.jpg')
+        output_path = output_path.with_suffix(f'{output_path.suffix}.jpg')
         # result = generate_thumbnail(str(inpath), str(output_path), options)
         result = create_video_thumbnail(str(inpath), output_path, meta={'relative_path': relative_path})
     else:

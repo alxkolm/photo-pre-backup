@@ -9,6 +9,7 @@ parser.add('-c', '--my-config', required=False, is_config_file=True, help='confi
 parser.add_argument('--index-file', required=True)
 parser.add_argument('--photo-dir', required=True)
 parser.add_argument('--thumbnails-dir', required=True)
+parser.add_argument('--packed-dir', required=True)
 
 subparser_command = parser.add_subparsers(title='command', help='Operation mode', dest='command')
 thumbnail = subparser_command.add_parser('thumbnail')

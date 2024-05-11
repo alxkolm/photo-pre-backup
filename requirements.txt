@@ -1,3 +1,4 @@
 tqdm
 pyvideothumbnailer
 ConfigArgParse==1.7
+uuid7

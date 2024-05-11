@@ -1,10 +1,10 @@
-import json
-from pathlib import Path
-import sqlite3
 import logging
+import sqlite3
+import tarfile
+from pathlib import Path
 
-from commands.thumbnail import get_thumbnail_filepath
-from utils.file import list_files, sha256
+from uuid_extensions import uuid7
+
 import config
 
 
@@ -12,7 +12,7 @@ def run():
     conn = sqlite3.connect(config.options.index_file)
     db = conn.cursor()
 
-    db.execute('SELECT original_file_path FROM backup WHERE is_packed = 0 ORDER BY original_file_path')
+    db.execute('SELECT original_file_path FROM backup WHERE is_packed = 0 AND has_thumbnail = 1 ORDER BY original_file_path')
     photo_path = Path(config.options.photo_dir)
     total = 0
     files_info = []
@@ -38,9 +38,20 @@ def run():
             current_buckets_size = 0
         current_bucket.append(x)
         current_buckets_size = current_buckets_size + x['size']
-    buckets.append(current_bucket) # add last bucket
+    if len(current_bucket) > 0:
+        buckets.append(current_bucket)  # add last bucket
 
-    for b in buckets:
+    output_base_path = Path(config.options.packed_dir)
+    output_base_path.mkdir(parents=True, exist_ok=True)
+
+    for files in buckets:
         # TODO compress files
-        pass
-
+        # part_path = Path('{0}.tar.gz'.format(uuid.uuid1(0, int(time.time())).hex))
+        part_path = Path('{0}.tar.gz'.format(uuid7(as_type='str')))
+        full_path = output_base_path.joinpath(part_path)
+        with tarfile.open(full_path, mode='w:gz', compresslevel=1) as targz:
+            for file in files:
+                targz.add(file['absolute_path'], arcname=file['original_file_path'])
+        SQL = "UPDATE backup SET is_packed = 1, packed_file_path = ? WHERE original_file_path = ?"
+        db.executemany(SQL, [(str(part_path), str(x['original_file_path'])) for x in files])
+        db.connection.commit()

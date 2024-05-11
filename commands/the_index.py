@@ -41,9 +41,9 @@ def run_update():
         cursor = db.execute("""
         CREATE TABLE IF NOT EXISTS backup (
             original_file_path TEXT UNIQUE,
-            is_packed INTEGER,
-            has_thumbnail INTEGER,
-            has_exif INTEGER,
+            is_packed INTEGER NOT NULL,
+            has_thumbnail INTEGER NOT NULL,
+            has_exif INTEGER NOT NULL,
             packed_file_path TEXT NULL,
             thumbnail_file_path TEXT NULL,
             exif TEXT NULL,
@@ -62,7 +62,7 @@ def run_update():
             has_thumbnail = thumbnail_path.exists()
 
             params = [(str(relative_path),
-                       # 0,
+                       0,
                        1 if has_thumbnail else 0,
                        1 if exifmeta else 0,
                        # None,
@@ -70,8 +70,8 @@ def run_update():
                        json.dumps(exifmeta) if exifmeta else None,
                        sha256(filepath))]
             db.executemany("""
-            INSERT INTO backup (original_file_path,has_thumbnail,has_exif, thumbnail_file_path,exif, file_checksum)
-            VALUES (?,?,?,?,?,?)
+            INSERT INTO backup (original_file_path,is_packed,has_thumbnail,has_exif, thumbnail_file_path,exif, file_checksum)
+            VALUES (?,?,?,?,?,?,?)
             ON CONFLICT (original_file_path) DO UPDATE SET
                 -- is_packed          = excluded.is_packed,
                 has_thumbnail      = excluded.has_thumbnail,

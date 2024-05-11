@@ -62,21 +62,21 @@ def run_update():
             has_thumbnail = thumbnail_path.exists()
 
             params = [(str(relative_path),
-                       0,
+                       # 0,
                        1 if has_thumbnail else 0,
                        1 if exifmeta else 0,
-                       None,
+                       # None,
                        str(thumbnail_path_relative) if has_thumbnail else None,
                        json.dumps(exifmeta) if exifmeta else None,
                        sha256(filepath))]
             db.executemany("""
-            INSERT INTO backup (original_file_path,is_packed,has_thumbnail,has_exif, packed_file_path,thumbnail_file_path,exif, file_checksum)
-            VALUES (?,?,?,?,?,?,?,?)
+            INSERT INTO backup (original_file_path,has_thumbnail,has_exif, thumbnail_file_path,exif, file_checksum)
+            VALUES (?,?,?,?,?,?)
             ON CONFLICT (original_file_path) DO UPDATE SET
-                is_packed          = excluded.is_packed,
+                -- is_packed          = excluded.is_packed,
                 has_thumbnail      = excluded.has_thumbnail,
                 has_exif           = excluded.has_exif,
-                packed_file_path   = excluded.packed_file_path,
+                -- packed_file_path   = excluded.packed_file_path,
                 thumbnail_file_path= excluded.thumbnail_file_path,
                 exif               = excluded.exif,
                 file_checksum      = excluded.file_checksum

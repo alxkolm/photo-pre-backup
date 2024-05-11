@@ -73,13 +73,13 @@ def run_update():
             INSERT INTO backup (original_file_path,is_packed,has_thumbnail,has_exif, packed_file_path,thumbnail_file_path,exif, file_checksum)
             VALUES (?,?,?,?,?,?,?,?)
             ON CONFLICT (original_file_path) DO UPDATE SET
-                is_packed=excluded.is_packed,
-                has_thumbnail=excluded.has_thumbnail,
-                has_exif=excluded.has_exif,
-                packed_file_path=excluded.packed_file_path,
-                thumbnail_file_path=excluded.thumbnail_file_path,
-                exif=excluded.exif,
-                file_checksum=excluded.file_checksum
+                is_packed          = excluded.is_packed,
+                has_thumbnail      = excluded.has_thumbnail,
+                has_exif           = excluded.has_exif,
+                packed_file_path   = excluded.packed_file_path,
+                thumbnail_file_path= excluded.thumbnail_file_path,
+                exif               = excluded.exif,
+                file_checksum      = excluded.file_checksum
             """, params)
         conn.commit()
 

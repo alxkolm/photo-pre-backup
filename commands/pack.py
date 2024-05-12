@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sqlite3
 import tarfile
@@ -64,7 +65,9 @@ def compress_buckets(buckets, filename_suffix):
         # TODO compress files
         # part_path = Path('{0}.tar.gz'.format(uuid.uuid1(0, int(time.time())).hex))
         part_path = Path('{0}_{1}.tar.gz'.format(uuid7(as_type='str'), filename_suffix))
-        full_path = output_base_path.joinpath(part_path)
+        month = datetime.date.today().strftime('%Y-%m')
+        full_path = output_base_path.joinpath(month, part_path)
+        full_path.parent.mkdir(parents=True, exist_ok=True)
         with tarfile.open(full_path, mode='w:gz', compresslevel=1) as targz:
             for file in files:
                 targz.add(file['absolute_path'], arcname=file['original_file_path'])

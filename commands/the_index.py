@@ -41,6 +41,8 @@ def run_update():
         cursor = db.execute("""
         CREATE TABLE IF NOT EXISTS backup (
             original_file_path  TEXT UNIQUE,
+            mime_type           TEXT,
+            size                INTEGER,
             is_packed           INTEGER NOT NULL,
             has_thumbnail       INTEGER NOT NULL,
             has_exif            INTEGER NOT NULL,
@@ -56,12 +58,16 @@ def run_update():
         for filepath in list(fs)[0:100]:
             exifmeta = get_meta(filepath)
             exifmeta = None if 'error' in exifmeta else exifmeta
+            mime_type = exifmeta['File:MIMEType'] if 'File:MIMEType' in exifmeta else None
+            size = pathlib.Path(filepath).stat().st_size
             relative_path = str(filepath).replace(config.options.photo_dir, '')
             thumbnail_path = pathlib.Path(get_thumbnail_filepath(filepath))
             thumbnail_path_relative = str(thumbnail_path).replace(config.options.thumbnails_dir, '')
             has_thumbnail = thumbnail_path.exists()
 
             params = [(str(relative_path),
+                       mime_type,
+                       size,
                        0,
                        1 if has_thumbnail else 0,
                        1 if exifmeta else 0,
@@ -71,15 +77,19 @@ def run_update():
                        sha256(filepath))]
             db.executemany("""
             INSERT INTO backup (original_file_path,
+                                mime_type,
+                                size,
                                 is_packed,
                                 has_thumbnail,
                                 has_exif,
                                 thumbnail_file_path,
                                 exif,
                                 file_checksum)
-            VALUES (?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?)
             ON CONFLICT (original_file_path) DO UPDATE SET
                 -- is_packed          = excluded.is_packed,
+                mime_type          = excluded.mime_type,
+                size               = excluded.size,
                 has_thumbnail      = excluded.has_thumbnail,
                 has_exif           = excluded.has_exif,
                 -- packed_file_path   = excluded.packed_file_path,

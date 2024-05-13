@@ -38,13 +38,15 @@ def run():
     compress_buckets(buckets_misc, 'misc')
     compress_buckets(buckets_video, 'video')
 
+    db.close()
+
 
 def split_on_buckets(files_info):
     buckets = []
     current_buckets_size = 0
     current_bucket = []
     for x in files_info:
-        if current_buckets_size >= 128 * 1024 * 1024:
+        if current_buckets_size >= 256 * 1024 * 1024:
             buckets.append(current_bucket)
             current_bucket = []
             current_buckets_size = 0
@@ -74,3 +76,4 @@ def compress_buckets(buckets, filename_suffix):
         SQL = "UPDATE backup SET is_packed = 1, packed_file_path = ? WHERE original_file_path = ?"
         db.executemany(SQL, [(str(part_path), str(x['original_file_path'])) for x in files])
         db.connection.commit()
+    conn.close()

@@ -12,7 +12,8 @@ def run():
     # command routing
     routing = {
         'list': run_list,
-        'update': run_update
+        'update': run_update,
+        'check': run_check
     }
 
     if config.options.subcommand not in routing:
@@ -55,10 +56,10 @@ def run_update():
 
     def update_index():
         fs = list_files(config.options.photo_dir)
-        for filepath in list(fs)[0:100]:
+        for filepath in list(fs):
             exifmeta = get_meta(filepath)
             exifmeta = None if 'error' in exifmeta else exifmeta
-            mime_type = exifmeta['File:MIMEType'] if 'File:MIMEType' in exifmeta else None
+            mime_type = exifmeta['File:MIMEType'] if exifmeta is not None and 'File:MIMEType' in exifmeta else None
             size = pathlib.Path(filepath).stat().st_size
             relative_path = str(filepath).replace(config.options.photo_dir, '')
             thumbnail_path = pathlib.Path(get_thumbnail_filepath(filepath))
@@ -102,3 +103,6 @@ def run_update():
     db_initialization()
     update_index()
     conn.close()
+
+def run_check():
+    pass

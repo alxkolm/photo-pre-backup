@@ -32,7 +32,7 @@ def run():
     logging.info(f"Found {len(files_info)} files with total size {total/1024/1024:.1f} Mb")
 
     # split list of files to two subsets: images and video
-    is_video = lambda z: z['mime_type'].startswith('video')
+    is_video = lambda z: z['mime_type'].startswith('video') if z['mime_type'] is not None else False
     buckets_video = split_on_buckets([x for x in files_info if is_video(x)])
     buckets_misc = split_on_buckets([x for x in files_info if not is_video(x)])
     compress_buckets(buckets_misc, 'misc')
@@ -66,9 +66,10 @@ def compress_buckets(buckets, filename_suffix):
     for files in buckets:
         # TODO compress files
         # part_path = Path('{0}.tar.gz'.format(uuid.uuid1(0, int(time.time())).hex))
-        part_path = Path('{0}_{1}.tar.gz'.format(uuid7(as_type='str'), filename_suffix))
-        month = datetime.date.today().strftime('%Y-%m')
-        full_path = output_base_path.joinpath(month, part_path)
+        month = datetime.date.today().strftime("%Y-%m")
+        part_path = Path(month, '{0}_{1}.tar.gz'.format(uuid7(as_type='str'), filename_suffix))
+
+        full_path = output_base_path.joinpath(part_path)
         full_path.parent.mkdir(parents=True, exist_ok=True)
         with tarfile.open(full_path, mode='w:gz', compresslevel=1) as targz:
             for file in files:

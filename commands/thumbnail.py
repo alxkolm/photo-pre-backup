@@ -9,7 +9,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import config
 import utils.file
 
-video_extensions = ['.mp4', '.mov']
+video_extensions = ['.avi', '.divx', '.flv', '.m4v', '.mkv', '.mov', '.mp4', '.mpg', '.wmv', '.mts']
 
 
 def run():
@@ -32,7 +32,7 @@ def run():
 
 
 def create_image_thumbnail(input_path: str, out_path: str) -> bool:
-    shell_command = ['convert', '-resize', '300', '-quality', '50', input_path, out_path]
+    shell_command = ['convert', '-resize', '500', '-quality', '50', input_path, out_path]
     x = subprocess.call(shell_command)
     return True if x == 0 else False
 
@@ -74,7 +74,7 @@ def create_thumbnail(filepath: str) -> Dict:
     relative_path = str(inpath).replace(config.options.photo_dir, '')
 
     # route to specific thumbnail creation function depending on file extension
-    if output_path.suffix in video_extensions:
+    if inpath.suffix in video_extensions:
         output_path = output_path.with_suffix(f'{output_path.suffix}.jpg')
         # result = generate_thumbnail(str(inpath), str(output_path), options)
         result = create_video_thumbnail(str(inpath), output_path, meta={'relative_path': relative_path})

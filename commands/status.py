@@ -1,18 +1,19 @@
 import json
-import pathlib
+from pathlib import Path
 import sqlite3
 
 from commands.thumbnail import get_thumbnail_filepath
 from utils.file import list_files, sha256
 import config
 from utils.exiftool import get_meta
-
+from tqdm import tqdm
 
 def run():
     # command routing
     routing = {
         'index': run_status,
-        'parts': status_parts
+        'parts': status_parts,
+        'check': status_check,
     }
 
     if config.options.subcommand not in routing:
@@ -31,7 +32,7 @@ def run_status():
        count(iif(has_thumbnail,1,NULL)) AS count_has_thumbnails,
        count(iif(has_exif,1,NULL)) AS count_has_exif,
        count(iif(is_packed,1,NULL)) AS count_is_packed,
-       count(DISTINCT iif(is_packed,1,NULL))
+       count(DISTINCT packed_file_path)
     FROM backup
     """
     db.execute(SQL_STATS)
@@ -49,7 +50,7 @@ def run_status():
     """)
     result = db.fetchall()
 
-    thumb_base_dir = pathlib.Path(config.options.thumbnails_dir)
+    thumb_base_dir = Path(config.options.thumbnails_dir)
     thumb_existed_count = 0
     thumb_non_existed_count = 0
 
@@ -64,7 +65,7 @@ def run_status():
         else:
             thumb_non_existed_count += 1
 
-    packed_base_dir = pathlib.Path(config.options.packed_dir)
+    packed_base_dir = Path(config.options.packed_dir)
     packed_file_exist_count = 0
     packed_file_non_exist_count = 0
 
@@ -110,7 +111,7 @@ def status_parts():
     db.execute(SQL)
     result = db.fetchall()
 
-    packed_base_dir = pathlib.Path(config.options.packed_dir)
+    packed_base_dir = Path(config.options.packed_dir)
     parts_stats = {}
     for row in result:
         part_file = row[0]
@@ -128,3 +129,28 @@ def status_parts():
     max_name_width = max([len(x) for x in parts_stats.keys()]) if len(parts_stats) > 0 else 0
     for part_file, stats in parts_stats.items():
         print(f'{part_file:<{max_name_width}}\texists={stats["exists"]}\t{stats["files_count"]} files')
+
+
+def status_check():
+    conn = sqlite3.connect(config.options.index_file)
+    db = conn.cursor()
+
+    db.execute('SELECT original_file_path, file_checksum FROM backup')
+    # create map with file => checksum
+    checksums = {x[0]: x[1] for x in db.fetchall()}
+
+    photo_base_path = Path(config.options.photo_dir)
+    packed_base_path = Path(config.options.packed_dir)
+    fs = list_files(config.options.photo_dir)
+    changed_files = {}
+    for filepath in tqdm(list(fs)):
+        relative_path = str(filepath).replace(config.options.photo_dir, '')
+        actual_checksum = sha256(filepath)
+        if (actual_checksum != checksums[relative_path]):
+            changed_files[relative_path] = {
+                'actual_checksum': actual_checksum,
+                'expected_checksum': checksums[relative_path]
+            }
+    print(f'Found {len(changed_files)} changed files. Everything is OK.')
+    for f,info in changed_files.items():
+        print(f)

@@ -18,6 +18,8 @@ pack = subparser_command.add_parser('pack')
 unpack = subparser_command.add_parser('unpack')
 status = subparser_command.add_parser('status')
 
+unpack.add_argument('path', default='*', nargs='?')
+
 index_command = index.add_subparsers(title='subcommand', dest='subcommand')
 index_command.default = 'list'
 index_command.add_parser('list')

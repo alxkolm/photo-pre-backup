@@ -6,6 +6,7 @@ from commands.thumbnail import get_thumbnail_filepath
 from utils.file import list_files, sha256
 import config
 from utils.exiftool import get_meta
+from tqdm import tqdm
 
 
 def run():
@@ -56,7 +57,7 @@ def run_update():
 
     def update_index():
         fs = list_files(config.options.photo_dir)
-        for filepath in list(fs):
+        for filepath in tqdm(list(fs)):
             exifmeta = get_meta(filepath)
             exifmeta = None if 'error' in exifmeta else exifmeta
             mime_type = exifmeta['File:MIMEType'] if exifmeta is not None and 'File:MIMEType' in exifmeta else None

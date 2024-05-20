@@ -32,7 +32,7 @@ def run():
 
 
 def create_image_thumbnail(input_path: str, out_path: str) -> bool:
-    shell_command = ['convert', '-resize', '500', '-quality', '50', input_path, out_path]
+    shell_command = ['convert', '-resize', '700>', '-quality', '50', input_path, out_path]
     x = subprocess.call(shell_command)
     return True if x == 0 else False
 

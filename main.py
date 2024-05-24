@@ -4,6 +4,7 @@ import commands.thumbnail
 import commands.the_index
 import commands.pack
 import commands.unpack
+import commands.cleanup
 import commands.status
 import logging
 from config import options
@@ -17,7 +18,8 @@ if __name__ == '__main__':
         'index': commands.the_index.run,
         'pack': commands.pack.run,
         'unpack': commands.unpack.run,
-        'status': commands.status.run
+        'status': commands.status.run,
+        'cleanup': commands.cleanup.run,
     }
 
     if options.command not in routing:

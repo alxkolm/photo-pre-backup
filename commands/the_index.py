@@ -26,9 +26,27 @@ def run():
 
 
 def run_list():
-    fs = list_files(config.options.input_dir)
-    for x in fs:
-        print(x)
+    conn = sqlite3.connect(config.options.index_file)
+    db = conn.cursor()
+
+    db.execute(
+    """
+            SELECT original_file_path, packed_file_path
+            FROM backup
+            WHERE is_packed = 1 AND original_file_path GLOB :path_pattern ORDER BY original_file_path
+                """,
+    {"path_pattern": config.options.path},
+)
+    result = db.fetchall()
+    if config.options.packs:
+        # get unique pack
+        packs_files = sorted(list(set([x[1] for x in result])))
+        for x in packs_files:
+            print(x)
+        print('Backblaze regexp', f'({"|".join(packs_files)})')
+    else:
+        for x in result:
+            print(x[0])
 
 
 def run_update():
@@ -106,4 +124,14 @@ def run_update():
     conn.close()
 
 def run_check():
-    pass
+    conn = sqlite3.connect(config.options.index_file)
+    db = conn.cursor()
+
+    db.execute("SELECT original_file_path FROM backup")
+    result = db.fetchall()
+    photo_base_dir = pathlib.Path(config.options.photo_dir)
+    for row in result:
+        filepath =photo_base_dir.joinpath(row[0].strip('/'))
+        if not filepath.exists():
+            continue
+

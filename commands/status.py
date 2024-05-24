@@ -143,6 +143,7 @@ def status_check():
     packed_base_path = Path(config.options.packed_dir)
     fs = list_files(config.options.photo_dir)
     changed_files = {}
+    file_count = 0
     for filepath in tqdm(list(fs)):
         relative_path = str(filepath).replace(config.options.photo_dir, '')
         actual_checksum = sha256(filepath)
@@ -151,6 +152,9 @@ def status_check():
                 'actual_checksum': actual_checksum,
                 'expected_checksum': checksums[relative_path]
             }
-    print(f'Found {len(changed_files)} changed files. Everything is OK.')
-    for f,info in changed_files.items():
-        print(f)
+        file_count += 1
+    if len(changed_files) == 0:
+        print(f'Checked {file_count} files. Found {len(changed_files)} changed files. Everything is OK.')
+    else:
+        for f, info in changed_files.items():
+            print(f)

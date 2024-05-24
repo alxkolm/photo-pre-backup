@@ -3,7 +3,7 @@ import logging
 import sqlite3
 import tarfile
 from pathlib import Path
-
+from tqdm import tqdm
 from uuid_extensions import uuid7
 
 import config

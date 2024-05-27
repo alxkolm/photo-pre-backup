@@ -8,6 +8,8 @@ import config
 from utils.exiftool import get_meta
 from tqdm import tqdm
 
+from utils.remove_empty_folders import removeEmptyFolders
+
 
 def run():
     # command routing
@@ -37,20 +39,21 @@ def run_remove():
     fs = list_files(config.options.photo_dir)
     changed_files = {}
     file_count = 0
-    for filepath in tqdm(list(fs)):
+    deleted_file_count = 0
+    for filepath in list(fs):
         relative_path = str(filepath).replace(config.options.photo_dir, '')
         file_info = checksums.get(relative_path)
         if file_info is None:
             print(f"Skip file {filepath}")
             continue
-        # actual_checksum = sha256(filepath)
-        # if actual_checksum != file_info['checksum']:
-        #     changed_files[relative_path] = {
-        #         'actual_checksum': actual_checksum,
-        #         'expected_checksum': checksums[relative_path]
-        #     }
-        #     print(f"Skip file {relative_path}. Checksum does not match.")
-        #     continue
+        actual_checksum = sha256(filepath)
+        if actual_checksum != file_info['checksum']:
+            changed_files[relative_path] = {
+                'actual_checksum': actual_checksum,
+                'expected_checksum': checksums[relative_path]
+            }
+            print(f"Skip file {relative_path}. Checksum does not match.")
+            continue
 
         thumbs_file = thumbnails_base_path.joinpath(file_info['thumbnail_path'].strip('/'))
         if not thumbs_file.exists():
@@ -58,5 +61,13 @@ def run_remove():
             continue
 
         print(f"Delete {relative_path}")
+        file_abs_path = photo_base_path.joinpath(relative_path.strip('/'))
+        if file_abs_path.exists():
+            file_abs_path.unlink()
+            deleted_file_count += 1
 
         file_count += 1
+
+    removeEmptyFolders(photo_base_path, removeRoot=False)
+
+    print(f'Scanned {file_count}. Deleted {deleted_file_count} files')

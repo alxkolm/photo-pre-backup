@@ -156,5 +156,6 @@ def status_check():
     if len(changed_files) == 0:
         print(f'Checked {file_count} files. Found {len(changed_files)} changed files. Everything is OK.')
     else:
+        print(f'Found {len(changed_files)} changed files')
         for f, info in changed_files.items():
             print(f)
